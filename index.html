@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Factura Flow</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Calculadora Factura Flow</h1>
+            <p>Calculá tu pago final con reintegros por nivel y ventas QR</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Datos de la Factura</h2>
+            </div>
+            <div class="card-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nivel">Nivel en Personal Pay:</label>
+                        <select id="nivel" class="form-control">
+                            <option value="">Selecciona un nivel</option>
+                            <option value="1">Nivel 1 - 10% (Tope: $750,00)</option>
+                            <option value="2">Nivel 2 - 15% (Tope: $2.000,00)</option>
+                            <option value="3">Nivel 3 - 20% (Tope: $3.500,00)</option>
+                            <option value="4">Nivel 4 - 25% (Tope: $7.000,00)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="monto">Monto de tu Factura Flow:</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="text" id="monto" class="form-control" placeholder="0,00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="ventasQR">
+                        <span class="checkmark"></span>
+                        Aplicar reintegro extra por ventas con QR (70% - Tope: $9.000,00)
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="pagoDividido">
+                        <span class="checkmark"></span>
+                        Pago dividido (dividir el pago en 2 apps)
+                    </label>
+                </div>
+
+                <div id="pagoDivididoSection" class="pago-dividido-section" style="display: none;">
+                    <div class="optimize-button-container">
+                        <button id="optimizarPago" class="btn btn-outline btn-optimize">
+                            <i class="fas fa-magic"></i> Optimizar pago
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pago1">Pago 1:</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="text" id="pago1" class="form-control" placeholder="0,00">
+                        </div>
+                        <div id="pago1Error" class="error-message" style="display: none;"></div>
+                        <div id="pago2Info" class="info-message" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button id="calcularBtn" class="btn btn-primary btn-large" disabled>
+                        <i class="fas fa-calculator"></i> Calcular
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultados" class="resultados" style="display: none;">
+            <div id="resultadoCompleto" class="resultado-card">
+                <div class="card-header">
+                    <h3>Pago completo</h3>
+                </div>
+                <div class="card-content">
+                    <div class="resultado-item negativo">
+                        <span>Factura de Personal</span>
+                        <span id="facturaPersonal">-$0,00</span>
+                    </div>
+                    <div class="resultado-item positivo">
+                        <span id="reintegroNivelLabel">Reintegro por Nivel</span>
+                        <span id="reintegroNivel">+$0,00</span>
+                    </div>
+                    <div class="resultado-item positivo">
+                        <span>Reintegro por ventas QR</span>
+                        <span id="reintegroQR">+$0,00</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="resultado-item final">
+                        <span>Pago final</span>
+                        <span id="pagoFinal">$0,00</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="resultado-item ahorro">
+                        <span>Total ahorrado</span>
+                        <span id="totalAhorrado">$0,00 (0%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultadoDividido" class="resultado-card" style="display: none;">
+                <div class="card-header">
+                    <h3>Pago dividido</h3>
+                </div>
+                <div class="card-content">
+                    <div class="pago-dividido-grid">
+                        <div class="pago-app">
+                            <h4>App Personal Pay - Pago 1</h4>
+                            <div class="resultado-item negativo">
+                                <span>Monto a pagar 1</span>
+                                <span id="montoPago1">-$0,00</span>
+                            </div>
+                            <div class="resultado-item positivo">
+                                <span id="reintegroNivelPago1Label">Reintegro por Nivel</span>
+                                <span id="reintegroNivelPago1">+$0,00</span>
+                            </div>
+                            <div class="resultado-item positivo">
+                                <span>Reintegro por ventas QR</span>
+                                <span id="reintegroQRPago1">+$0,00</span>
+                            </div>
+                            <div class="resultado-item parcial">
+                                <span>Pago parcial 1</span>
+                                <span id="pagoParcial1">$0,00</span>
+                            </div>
+                        </div>
+
+                        <div class="pago-app">
+                            <h4>App Personal Flow - Pago 2</h4>
+                            <div class="resultado-item negativo">
+                                <span>Monto a pagar 2</span>
+                                <span id="montoPago2">-$0,00</span>
+                            </div>
+                            <div class="resultado-item positivo">
+                                <span id="reintegroNivelPago2Label">Reintegro por Nivel</span>
+                                <span id="reintegroNivelPago2">+$0,00</span>
+                            </div>
+                            <div class="resultado-item positivo">
+                                <span>Reintegro por ventas QR</span>
+                                <span id="reintegroQRPago2">+$0,00</span>
+                            </div>
+                            <div class="resultado-item parcial">
+                                <span>Pago parcial 2</span>
+                                <span id="pagoParcial2">$0,00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="resultado-item final">
+                        <span>Pago final</span>
+                        <span id="pagoFinalDividido">$0,00</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="resultado-item ahorro">
+                        <span>Total ahorrado:</span>
+                        <span id="totalAhorradoDividido">$0,00 (0%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-container">
+                <button id="descargarBtn" class="btn btn-success btn-large">
+                    <i class="fas fa-download"></i> Descargar comprobante
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>
